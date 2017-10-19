@@ -8,95 +8,112 @@
 using namespace std;
 using namespace mssm;
 
+// working
+void printVec(vector<Vec2d> vec)
+{
+    for(unsigned int i = 0; i < vec.size(); i++)
+    {
+        if(i == 0)
+        {
+            cout << "<" << vec[i].x << " , " << vec[i].y << endl;
+        }
+        else if(i == vec.size()-1)
+        {
+            cout << " " << vec[i].x << " , " << vec[i].y << ">" << endl;
+        }
+        else
+        {
+            cout << " " << vec[i].x << " , " << vec[i].y << endl;
+        }
+    }
+}
+
+// working
+void drawPt(Graphics& g, Vec2d center, Color c)
+{
+    g.line(center,center,c);
+}
+
+// working
+bool compareByX(Vec2d v1, Vec2d v2)
+{
+    if(v1.x < v2.x)
+    {
+        return true;
+    }
+    return false;
+}
+
+// should work
+bool compareByY(Vec2d v1, Vec2d v2)
+{
+    if(v1.y < v2.y)
+    {
+        return true;
+    }
+    return false;
+}
+
+// working
+double distance(Vec2d p1, Vec2d p2)
+{
+    double dist;
+    double diffX = p1.x - p2.x;
+    double diffY = p1.y - p2.y;
+
+    dist = sqrt(pow(diffX,2)+pow(diffY,2));
+
+    return dist;
+}
+
+// working
+vector<Vec2d> drawRandomPts(Graphics& g, Vec2d upperLeft, Vec2d lowerRight, int num)
+{
+    vector<Vec2d> pts;
+
+    for(int i = 0; i < num; i++)
+    {
+        double randomX = g.randomDouble(upperLeft.x,lowerRight.x);
+        double randomY = g.randomDouble(upperLeft.y,lowerRight.y);
+
+        drawPt(g,{randomX,randomY},WHITE);
+
+        pts.push_back({randomX,randomY});
+    }
+
+    sort(pts.begin(),pts.end(),compareByX);
+
+    return pts;
+}
+
+// working
+void midLine(Graphics& g,vector<Vec2d> vec)
+{
+    cout << vec.size() << endl;
+
+    if(vec.size()%2 != 0)
+    {
+        double midPt = vec[floor(vec.size()/2)].x;
+        g.line({midPt,0},{midPt,(double)g.height()});
+    }
+    else
+    {
+        double midPt = (vec[vec.size()/2-1].x + vec[vec.size()/2].x)/2;
+        g.line({midPt,0},{midPt,(double)g.height()});
+    }
+}
+
 void graphicsMain(Graphics& g)
 {
-   // g.out << "Graphics Main" << QThread::currentThreadId() << endl;
+    vector<Vec2d> vec = drawRandomPts(g,{0,0},{(double)g.width(),(double)g.height()},10);
 
-    NetworkClientPlugin server(g, 1234, "localhost");
+    printVec(vec);
+
+    midLine(g,vec);
 
     while (g.draw())
     {
-        g.clear();
 
-        g.rect(10,10,20,50);
-        g.rect(30,30,20,50);
-        g.rect(15,60,20,50);
-
-        auto events = g.events();
-
-        for (unsigned int i = 0; i < events.size(); ++i) {
-            Event e = events[i];
-
-            NetworkSocketEvent socketEvent;
-            string socketData;
-
-            if (server.handleEvent(e, socketEvent, socketData)) {
-                // got a network event of some sort
-                switch (socketEvent)
-                {
-                case NetworkSocketEvent::connected:
-                    g.out << "Connected to: " + socketData << std::endl;
-                    break;
-                case NetworkSocketEvent::disconnected:
-                    server.closePlugin();
-                    break;
-                case NetworkSocketEvent::error:
-                    break;
-                case NetworkSocketEvent::other:
-                    break;
-                case NetworkSocketEvent::data:
-                    {
-                        stringstream ss(socketData);
-                        double x;
-                        double y;
-                        ss >> x;
-                        ss >> y;
-                        g.line(0,0,x,y);
-                    }
-                    break;
-                }
-
-                continue;
-            }
-
-            //g.out << e << endl;
-
-            switch (e.evtType) {
-            case EvtType::KeyPress:
-                mssm::download(g, "ftp://ftp.swpc.noaa.gov/pub/weekly/Predict.txt");
-                break;
-            case EvtType::KeyRelease:
-                break;
-            case EvtType::MouseMove:
-                if (server.isConnected()) {
-                    stringstream ss;
-                    ss << e.x << " " << e.y << "\n";
-                    server.send(ss.str());
-                }
-                break;
-            case EvtType::MousePress:
-                if (server.isConnected()) {
-                    stringstream ss;
-                    ss << e.x << " " << e.y << "\n";
-                    server.send(ss.str());
-                }
-                g.line(0,0,e.x, e.y);
-               // g.out << e.x << endl;
-                break;
-            case EvtType::MouseRelease:
-                break;
-            case EvtType::MouseWheel:
-                break;
-            case EvtType::PluginCreated:
-            case EvtType::PluginClosed:
-                break;
-            case EvtType::PluginMessage:
-                g.out << e << endl;
-                break;
-            case EvtType::MusicEvent:
-                break;
-            }
-        }
     }
 }
 
@@ -104,5 +121,5 @@ int main()
 {
     cout << "Main Thread" << QThread::currentThreadId() << endl;
 
-    Graphics g("Graphics App", 300, 300, graphicsMain);
+    Graphics g("Closest Points", 900, 900, graphicsMain);
 }

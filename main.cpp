@@ -2,6 +2,7 @@
 #include "networkplugin.h"
 #include <iostream>
 #include <QThread>
+#include <cfloat>
 
 #include "filedownloader.h"
 
@@ -26,6 +27,12 @@ void printVec(vector<Vec2d> vec)
             cout << " " << vec[i].x << " , " << vec[i].y << endl;
         }
     }
+}
+
+// working
+void printVec2d(Vec2d pt)
+{
+    cout << "(" << pt.x << "," << pt.y << ")" << endl;
 }
 
 // working
@@ -103,6 +110,40 @@ void midLine(Graphics& g,vector<Vec2d> vec)
     }
 }
 
+// working
+double bruteForce(vector<Vec2d> vec)
+{
+    double closestDist = DBL_MAX;
+    Vec2d pt1;
+    Vec2d pt2;
+
+    for(unsigned int i = 0; i < vec.size() - 1; i++)
+    {
+        double xDist = vec[i].x - vec[i+1].x;
+        double yDist = vec[i].y - vec[i+1].y;
+        double distance = sqrt(pow(xDist,2)+pow(yDist,2));
+
+        if(distance < closestDist)
+        {
+            closestDist = distance;
+            pt1 = vec[i];
+            pt2 = vec[i+1];
+        }
+    }
+
+    printVec2d(pt1);
+    printVec2d(pt2);
+
+    return closestDist;
+}
+
+/*
+double minDist(vector<Vec2d> vec, unsigned int startIndex, unsigned int endIndex)
+{
+    double minDistance;
+}
+*/
+
 void graphicsMain(Graphics& g)
 {
     vector<Vec2d> vec = drawRandomPts(g,{0,0},{(double)g.width(),(double)g.height()},10);
@@ -110,6 +151,8 @@ void graphicsMain(Graphics& g)
     printVec(vec);
 
     midLine(g,vec);
+
+    bruteForce(vec);
 
     while (g.draw())
     {
